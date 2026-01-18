@@ -142,14 +142,14 @@ Examples:
 GET:
   python3 xss.py \\
     -u "http://testphp.vulnweb.com/search.php?test=abc" \\
-    -w payloads.txt
+    -w xss_payloads/xss_payloads.txt 
 
 POST:
   python3 xss.py \\
     -u "http://testphp.vulnweb.com/guestbook.php" \\
     -X POST \\
     -d "name=test&comment=test" \\
-    -w payloads.txt
+    -w xss_payloads/xss_payloads.txt 
 """,
         formatter_class=argparse.RawDescriptionHelpFormatter
     )

@@ -163,16 +163,16 @@ def main():
 Examples:
 
 GET:
-  python3 main.py \\
+  python3 sqli.py \\
     -u "http://testphp.vulnweb.com/listproducts.php?cat=1" \\
-    -w payloads.txt
+    -w sqli_payloads/sqli_payloads.txt 
 
 POST:
-  python3 main.py \\
+  python3 sqli.py \\
     -u "http://testphp.vulnweb.com/login.php" \\
     -X POST \\
     -d "username=admin&password=admin" \\
-    -w payloads.txt
+    -w sqli_payloads/sqli_payloads.txt 
 """,
         formatter_class=argparse.RawDescriptionHelpFormatter
     )
