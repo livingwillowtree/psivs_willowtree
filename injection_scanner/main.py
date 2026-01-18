@@ -26,16 +26,10 @@ DB_ERRORS = {
     "SQLite": ["sqlite", "sqliteexception"]
 }
 
-# -----------------------------
-# Signal handling
-# -----------------------------
 def handle_sigint(signum, frame):
     STOP_EVENT.set()
     print("\n[INFO] interrupt received, stopping scan...")
 
-# -----------------------------
-# Helpers
-# -----------------------------
 def detect_dbms(text):
     t = text.lower()
     for db, sigs in DB_ERRORS.items():
@@ -79,9 +73,6 @@ def resolve_redirects(session, method, url, params=None, data=None):
 
     return r
 
-# -----------------------------
-# Core scan logic
-# -----------------------------
 def scan_param(
     session,
     method,
@@ -121,11 +112,9 @@ def scan_param(
                 f"time={delay:.2f}s"
             )
 
-            # Implied WAF / filtering (informational only)
             if r.status_code in (403, 406, 429):
                 print("[INFO] response suggests filtering or WAF")
 
-            # Error message based SQLi
             db = detect_dbms(r.text)
             if db:
                 return {
@@ -135,7 +124,6 @@ def scan_param(
                     "payload": payload
                 }
 
-            # HTTP status deviation heuristic
             if baseline_status < 500 and r.status_code >= 500:
                 return {
                     "type": "HTTP Error-based (implied)",
@@ -145,7 +133,6 @@ def scan_param(
                     "status": r.status_code
                 }
 
-            # Boolean-based (content similarity)
             sim = similarity(r.text, baseline_text)
             if sim < 0.95:
                 return {
@@ -156,7 +143,6 @@ def scan_param(
                     "similarity": round(sim, 3)
                 }
 
-            # Time-based (payload-driven)
             if delay - baseline_time >= time_threshold:
                 return {
                     "type": "Time-based",
@@ -168,9 +154,6 @@ def scan_param(
 
     return None
 
-# -----------------------------
-# Main
-# -----------------------------
 def main():
     signal.signal(signal.SIGINT, handle_sigint)
 
