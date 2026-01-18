@@ -1,0 +1,18 @@
+{
+  "manifest_version": 3,
+  "name": "Simple URL Threat Scanner",
+  "version": "1.0",
+  "description": "Scans the current URL against public threat feeds (no API).",
+  "permissions": ["tabs"],
+  "host_permissions": [
+    "https://openphish.com/*",
+    "https://urlhaus.abuse.ch/*"
+  ],
+  "background": {
+    "service_worker": "background.js"
+  },
+  "action": {
+    "default_popup": "popup.html"
+  }
+}
+
