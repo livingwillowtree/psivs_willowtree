@@ -56,7 +56,7 @@ def parse_finding(output, url, vuln_type):
         "type": vuln_type,
         "url": url,
         "param": param,
-        "suggestion": "Taint user input"
+        "suggestion": "read this => https://cheatsheetseries.owasp.org/"
     }
 
 def run_scanner(scanner, urls, wordlist, vuln_type, findings):
