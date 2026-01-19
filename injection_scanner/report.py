@@ -1,4 +1,4 @@
-def generate_html_report(findings, output_file="report.html"):
+def generate_html_report(findings, output_file="findings.html"):
     html = """<!DOCTYPE html>
 <html lang="en">
 <head>
