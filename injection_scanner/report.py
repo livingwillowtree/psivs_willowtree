@@ -1,5 +1,11 @@
-def generate_html_report(findings, output_file="findings.html"):
-    html = """<!DOCTYPE html>
+
+from pathlib import Path
+import html
+
+def generate_html_report(findings, output_file="report.html"):
+
+    html_content = """<!DOCTYPE html>
+
 <html lang="en">
 <head>
     <meta charset="UTF-8">
@@ -31,20 +37,33 @@ def generate_html_report(findings, output_file="findings.html"):
 """
 
     for f in findings:
-        html += f"""
-<div class="finding">
-    <p><span class="label">Type:</span> {f['type']}</p>
-    <p><span class="label">Vulnerable URL:</span> {f['url']}</p>
-    <p><span class="label">Vulnerable Parameter:</span> {f['param']}</p>
-    <p><span class="label">Suggestion:</span> {f['suggestion']}</p>
-</div>
-"""
 
-    html += """
+        vuln_type = html.escape(str(f["type"]))
+        url = html.escape(str(f["url"]))
+        param = html.escape(str(f["param"]))
+        suggestion = html.escape(str(f["suggestion"]))
+
+        html_content += f"""
+    <div class="finding">
+        <p><span class="label">Type:</span> {vuln_type}</p>
+        <p><span class="label">Vulnerable URL:</span> {url}</p>
+        <p><span class="label">Vulnerable Parameter:</span> {param}</p>
+        <p><span class="label">Suggestion:</span> {suggestion}</p>
+    </div>
+    """
+
+    html_content += """
+
 </body>
 </html>
 """
 
-    with open(output_file, "w") as f:
-        f.write(html)
+
+    output_path = Path(output_file).resolve()
+    output_path.parent.mkdir(parents=True, exist_ok=True)
+    
+    with open(output_file, "w", encoding="utf-8") as f:
+        f.write(html_content)
+    return output_path
+
 
