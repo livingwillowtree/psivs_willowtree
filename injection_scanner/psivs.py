@@ -6,11 +6,13 @@ import os
 import webbrowser
 import re
 from pathlib import Path
+from datetime import datetime
 from urllib.parse import urlparse, parse_qs
 from report import generate_html_report
 from urllib.parse import urlparse
 
-
+REPORT_DIR = Path("reports")
+REPORT_DIR.mkdir(exist_ok=True)
 BASE_DIR = Path(__file__).parent.resolve()
 ENGINE_DIR = BASE_DIR / "engine"
 WORDLIST_DIR = BASE_DIR / "wordlists"
@@ -104,6 +106,15 @@ def url_to_filename(url):
     safe = re.sub(r"-+", "-", safe).strip("-")
 
     return f"{safe}-findings.html"
+
+def build_report_path(target_url):
+    reports_dir = Path("reports")
+    reports_dir.mkdir(exist_ok=True)
+
+    base = url_to_filename(target_url).replace(".html", "")
+    timestamp = datetime.now().strftime("%Y%m%d-%H%M%S")
+
+    return reports_dir / f"{base}-{timestamp}.html"
 
 def main():
     parser = argparse.ArgumentParser(
@@ -199,15 +210,13 @@ XSS only:
         pass
 
     if findings:
-        report_path = Path(
-            generate_html_report(findings, args.output)
-        ).resolve()
-        report_path = generate_html_report(findings, args.output)
-        print(f"[+] Report written to {report_path}")
+        report_path = build_report_path(args.url)
+        generate_html_report(findings, report_path)
+        print(f"[+] Report written to {report_path.resolve()}")
 
         if not args.no_open:
             try:
-                webbrowser.open(report_path.as_uri())
+                webbrowser.open(report_path.resolve().as_uri())
                 print("[+] Opening report in browser")
             except Exception:
                 print("[!] Failed to open browser automatically")
