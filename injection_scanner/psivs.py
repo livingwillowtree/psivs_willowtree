@@ -4,9 +4,16 @@ import sys
 import tempfile
 import os
 import webbrowser
+import re
 from pathlib import Path
 from urllib.parse import urlparse, parse_qs
 from report import generate_html_report
+from urllib.parse import urlparse
+
+
+BASE_DIR = Path(__file__).parent.resolve()
+ENGINE_DIR = BASE_DIR / "engine"
+WORDLIST_DIR = BASE_DIR / "wordlists"
 
 def print_banner():
     print("Crawling target and testing discovered endpoints for injection vulnerabilities\n")
@@ -58,16 +65,16 @@ def parse_finding(output, url, vuln_type):
         "type": vuln_type,
         "url": url,
         "param": param,
-        "suggestion": "Taint user input"
+        "suggestion": "https://cheatsheetseries.owasp.org/"
     }
 
 def run_scanner(scanner, urls, wordlist, vuln_type, findings):
     for url in urls:
         cmd = [
             sys.executable,
-            scanner,
+            str(scanner),
             "-u", url,
-            "-w", wordlist
+            "-w", str(wordlist)
         ]
 
         result = subprocess.run(
@@ -84,6 +91,20 @@ def run_scanner(scanner, urls, wordlist, vuln_type, findings):
             if finding:
                 findings.append(finding)
 
+def url_to_filename(url):
+    parsed = urlparse(url)
+
+    # take hostname if it exists, fallback to path
+    base = parsed.netloc or parsed.path
+
+    # replace anything not filename-safe with hyphens
+    safe = re.sub(r"[^a-zA-Z0-9.-]", "-", base)
+
+    # collapse multiple hyphens
+    safe = re.sub(r"-+", "-", safe).strip("-")
+
+    return f"{safe}-findings.html"
+
 def main():
     parser = argparse.ArgumentParser(
         description="PSIVS (PUP Services Injection Vulnerability Scanner",
@@ -91,17 +112,17 @@ def main():
 Examples:
 
 SQLi and XSS scan:
-  python3 injector.py \\
+  python3 psivs.py \\
     -u http://testphp.vulnweb.com \\
     --sqli --xss
 
 SQL injection only:
-  python3 injector.py \\
+  python3 psivs.py \\
     -u http://example.com \\
     --sqli
 
 XSS only:
-  python3 injector.py \\
+  python3 psivs.py \\
     -u http://example.com \\
     --xss
 """,
@@ -117,8 +138,15 @@ XSS only:
     parser.add_argument("--sqli", action="store_true", help="enable SQL injection scanning")
     parser.add_argument("--xss", action="store_true", help="enable XSS scanning")
 
-    parser.add_argument("--sqli-wordlist", default="sqli_payloads.txt")
-    parser.add_argument("--xss-wordlist", default="xss_payloads.txt")
+    parser.add_argument(
+        "--sqli-wordlist",
+        default=WORDLIST_DIR / "sqli_payloads.txt"
+    )
+
+    parser.add_argument(
+        "--xss-wordlist",
+        default=WORDLIST_DIR / "xss_payloads.txt"
+    )
     parser.add_argument(
     "--no-open",
     action="store_true",
@@ -126,11 +154,14 @@ XSS only:
     )
     parser.add_argument(
     "--output",
-    default="report.html",
+    default=None,
     help="output HTML report file"
     )
 
     args = parser.parse_args()
+
+    if not args.output:
+        args.output = url_to_filename(args.url)
 
     if not args.sqli and not args.xss:
         parser.error("at least one scanner must be enabled (--sqli / --xss)")
@@ -148,7 +179,7 @@ XSS only:
     try:
         if args.sqli:
             run_scanner(
-                "sqli.py",
+                ENGINE_DIR/"sqli.py",
                 targets,
                 args.sqli_wordlist,
                 "SQLI",
@@ -157,7 +188,7 @@ XSS only:
 
         if args.xss:
             run_scanner(
-                "xss.py",
+                ENGINE_DIR/"xss.py",
                 targets,
                 args.xss_wordlist,
                 "XSS",
